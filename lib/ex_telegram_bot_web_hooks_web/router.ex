@@ -24,5 +24,7 @@ defmodule ExTelegramBotWebHooksWeb.Router do
     pipe_through :api
 
     post "/web_hook", WebHooksController, :receive_messages
+    post "/wet_webhook", WebHooksController, :set_webhook
+    get "/get_me", WebHooksController, :get_me
   end
 end

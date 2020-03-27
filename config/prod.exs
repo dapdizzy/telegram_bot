@@ -15,6 +15,8 @@ config :ex_telegram_bot_web_hooks, ExTelegramBotWebHooksWeb.Endpoint,
   force_ssl: [rewrite_on: [:x_forwarded_proto]],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+config :nadia, token: {:system, "BOT_TOKEN"}
+
 # Do not print debug messages in production
 config :logger, level: :info
 

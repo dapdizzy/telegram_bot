@@ -6,6 +6,8 @@ defmodule ExTelegramBotWebHooks.Application do
   use Application
 
   def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
     rabbitMQConnectionOptions =
       [
         host: System.get_env("RABBITMQ_HOST"),
@@ -20,7 +22,10 @@ defmodule ExTelegramBotWebHooks.Application do
       ExTelegramBotWebHooksWeb.Endpoint,
       # Starts a worker by calling: ExTelegramBotWebHooks.Worker.start_link(arg)
       # {ExTelegramBotWebHooks.Worker, arg},
-      {RabbitMQSender, [rabbitMQConnectionOptions, [name: RabbitMQSender], [exchange: "bot_messages_exchange", exchange_type: :direct]]}
+      worker(
+        RabbitMQSender,
+        [rabbitMQConnectionOptions, [name: RabbitMQSender], [exchange: "bot_messages_exchange", exchange_type: :direct]]
+        )
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

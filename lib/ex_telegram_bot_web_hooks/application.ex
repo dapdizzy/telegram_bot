@@ -17,10 +17,9 @@ defmodule ExTelegramBotWebHooks.Application do
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
-      ExTelegramBotWebHooksWeb.Endpoint
+      ExTelegramBotWebHooksWeb.Endpoint,
       # Starts a worker by calling: ExTelegramBotWebHooks.Worker.start_link(arg)
       # {ExTelegramBotWebHooks.Worker, arg},
-      ,
       {RabbitMQSender, [rabbitMQConnectionOptions, [name: RabbitMQSender], [exchange: "bot_messages_exchange", exchange_type: :direct]]}
     ]
 

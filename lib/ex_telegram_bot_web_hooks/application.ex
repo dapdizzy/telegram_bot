@@ -24,7 +24,7 @@ defmodule ExTelegramBotWebHooks.Application do
       # {ExTelegramBotWebHooks.Worker, arg},
       worker(
         RabbitMQSender,
-        [rabbitMQConnectionOptions, [name: RabbitMQSender], [exchange: "bot_messages_exchange", exchange_type: :direct]]
+        [rabbitMQConnectionOptions, [name: RabbitMQSender], [exchange: "bot_messages_exchange_topic", exchange_type: :topic]]
         )
     ]
 

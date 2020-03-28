@@ -3,9 +3,9 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
 
   def receive_messages(conn, params) do
     params_as_text = IO.inspect(params)
-    IO.puts "Json params arrived:\n#{params_as_text}"
+    IO.puts "Json params arrived:\n#{inspect params_as_text}"
     queue_name = Application.get_env(:ex_telegram_bot_web_hooks, :messages_queue)
-    RabbitMQSender |> RabbitMQSender.send_message(queue_name, params_as_text)
+    RabbitMQSender |> RabbitMQSender.send_message(queue_name, "#{inspect params_as_text}")
     json conn, params
   end
 

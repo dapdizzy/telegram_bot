@@ -2,11 +2,11 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
   use ExTelegramBotWebHooksWeb, :controller
 
   def receive_messages(conn, params) do
-    json_params = json conn, params
-    IO.puts "Json params arrived:\n#{json_params}"
+    params_as_text = IO.inspect(params)
+    IO.puts "Json params arrived:\n#{params_as_text}"
     queue_name = Application.get_env(:ex_telegram_bot_web_hooks, :messages_queue)
-    RabbitMQSender |> RabbitMQSender.send_message(queue_name, json_params)
-    json_params
+    RabbitMQSender |> RabbitMQSender.send_message(queue_name, params_as_text)
+    json conn, params
   end
 
   def set_webhook(conn, params) do

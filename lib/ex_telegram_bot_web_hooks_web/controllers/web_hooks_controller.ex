@@ -2,14 +2,16 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
   use ExTelegramBotWebHooksWeb, :controller
 
   def receive_messages(conn, params) do
-    params_as_text = inspect(params)
-    IO.puts "#{inspect params_as_text}"
-    text conn, params_as_text
+    json_params = json conn, params
+    IO.puts "Json params arrived:\n#{json_params}"
+    queue_name = Application.get_env(:ex_telegram_bot_web_hooks, :messages_queue)
+    RabbitMQSender |> RabbitMQSender.send_message(queue_name, json_params)
+    json_params
   end
 
   def set_webhook(conn, params) do
     reply =
-      case params["callback_url`"] do
+      case params["callback_url"] do
         url when url |> is_binary() and byte_size(url) > 0 ->
           case Nadia.set_webhook(url: url) do
             :ok -> "Set Webhook callback to [#{url}]"

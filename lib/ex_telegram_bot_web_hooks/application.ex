@@ -6,12 +6,22 @@ defmodule ExTelegramBotWebHooks.Application do
   use Application
 
   def start(_type, _args) do
+    rabbitMQConnectionOptions =
+      [
+        host: System.get_env("RABBITMQ_HOST"),
+        username: System.get_env("RABBITMQ_USERNAME"),
+        virtual_host: System.get_env("RABBITMQ_VIRTUAL_HOST"),
+        password: System.get_env("RABBITMQ_PASSWORD")
+      ]
+
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
       ExTelegramBotWebHooksWeb.Endpoint
       # Starts a worker by calling: ExTelegramBotWebHooks.Worker.start_link(arg)
       # {ExTelegramBotWebHooks.Worker, arg},
+      ,
+      {RabbitMQSender, [rabbitMQConnectionOptions, [name: RabbitMQSender], [exchange: "bot_messages_exchange", exchange_type: :direct]]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -7,6 +7,9 @@
 # General application configuration
 use Mix.Config
 
+config :ex_telegram_bot_web_hooks,
+  ecto_repos: [ExTelegramBotWebHooksWeb.Repo]
+
 # Configures the endpoint
 config :ex_telegram_bot_web_hooks, ExTelegramBotWebHooksWeb.Endpoint,
   url: [host: "localhost"],

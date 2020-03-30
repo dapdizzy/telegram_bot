@@ -16,7 +16,15 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       {:ok, _} -> IO.puts "Successfully saved message to the Database"
       something_else -> IO.puts "Oops, something went not quite as expected\n#{inspect something_else}"
     end
+    try_handle_request text, from
     json conn, params
+  end
+
+  defp try_handle_request(text, from) do
+    if text =~ ~r/my\s+messages/i do
+      message = "Sending your messages"
+      Nadia.send_message(from, message)
+    end
   end
 
   def set_webhook(conn, params) do

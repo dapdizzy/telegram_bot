@@ -11,7 +11,7 @@ database_url =
     For example: ecto://USER:PASS@HOST/DATABASE
     """
 
-config :ex_telegram_bot_web_hooks, ExTelegramBotWebHooksWeb.Repo,
+config :ex_telegram_bot_web_hooks, ExTelegramBotWebHooks.Repo,
   # ssl: true,
   url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")

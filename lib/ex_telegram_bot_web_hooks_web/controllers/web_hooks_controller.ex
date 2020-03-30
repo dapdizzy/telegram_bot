@@ -1,6 +1,7 @@
 defmodule ExTelegramBotWebHooksWeb.WebHooksController do
   alias ExTelegramBotWebHooks.Message
   alias ExTelegramBotWebHooks.Repo
+  require Ecto.Query
   use ExTelegramBotWebHooksWeb, :controller
 
   def receive_messages(conn, params) do
@@ -24,6 +25,10 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
     if text =~ ~r/my\s+messages/i do
       message = "Sending your messages"
       Nadia.send_message(from, message)
+      your_messages = Message |> Ecto.Query.where([m], from: ^from) |> Repo.all
+        |> Stream.map(fn %Message{message: msg} -> msg end)
+        |> Enum.join("\n")
+      Nadia.send_message(from, your_messages)
     end
   end
 

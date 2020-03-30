@@ -8,7 +8,7 @@
 use Mix.Config
 
 config :ex_telegram_bot_web_hooks,
-  ecto_repos: [ExTelegramBotWebHooksWeb.Repo]
+  ecto_repos: [ExTelegramBotWebHooks.Repo]
 
 # Configures the endpoint
 config :ex_telegram_bot_web_hooks, ExTelegramBotWebHooksWeb.Endpoint,

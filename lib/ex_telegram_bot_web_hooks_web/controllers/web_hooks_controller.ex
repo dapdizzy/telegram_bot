@@ -1,5 +1,6 @@
 defmodule ExTelegramBotWebHooksWeb.WebHooksController do
   alias ExTelegramBotWebHooks.Message
+  alias ExTelegramBotWebHooks.Repo
   use ExTelegramBotWebHooksWeb, :controller
 
   def receive_messages(conn, params) do

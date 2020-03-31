@@ -93,6 +93,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
           {:error, %HTTPoison.Error{reason: reason}} ->
             Nadia.send_message from, "Returned bad response with reason: #{inspect reason}"
         end
+        IO.puts "After the HTTP request being executed"
       else
         Nadia.send_message from, "Last file name is not set in the bot state"
       end

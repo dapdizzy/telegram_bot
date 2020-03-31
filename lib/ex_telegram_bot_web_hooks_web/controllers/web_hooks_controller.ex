@@ -48,6 +48,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
   defp try_handle_request(text, from) do
     cond do
       try_get_my_messages(text, from) -> true
+      try_get_last_file_path(text, from) -> true
     end
   end
 

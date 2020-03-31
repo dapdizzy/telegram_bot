@@ -83,6 +83,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       if last_file_path do
         Nadia.send_message from, "I see I have file [#{last_file_path}]. I'll try to go and download it."
         token = Application.get_env(:nadia, :token)
+        IO.puts "Going to send reqest to try and download file"
         case HTTPoison.get(~s|https://api.telegram.org/file/bot#{token}/#{last_file_path}|) do
           {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
             if status_code >= 200 and status_code < 299 do

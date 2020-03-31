@@ -13,11 +13,12 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
     message = params["message"]
     from = message["from"]["id"]
     text = message["text"]
-    case Repo.insert(%Message{from: from, message: text}) do
-      {:ok, _} -> IO.puts "Successfully saved message to the Database"
-      something_else -> IO.puts "Oops, something went not quite as expected\n#{inspect something_else}"
+    unless try_handle_request text, from do
+      case Repo.insert(%Message{from: from, message: text}) do
+        {:ok, _} -> IO.puts "Successfully saved message to the Database"
+        something_else -> IO.puts "Oops, something went not quite as expected\n#{inspect something_else}"
+      end
     end
-    try_handle_request text, from
     json conn, params
   end
 
@@ -29,6 +30,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
         |> Stream.map(fn %Message{message: msg} -> msg end)
         |> Enum.join("\n")
       Nadia.send_message(from, your_messages)
+      :ok
     end
   end
 

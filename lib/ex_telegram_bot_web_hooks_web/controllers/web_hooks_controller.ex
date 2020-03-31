@@ -15,7 +15,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
     from = message["from"]["id"]
     text = message["text"]
     cond do
-      (with text <- message["text"], text != nil do
+      (with text <- message["text"] when text |> is_binary() do
         unless try_handle_request text, from do
           case Repo.insert(%Message{from: from, message: text}) do
             {:ok, _} -> IO.puts "Successfully saved message to the Database"
@@ -24,7 +24,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
         end
         true
       end) -> true
-      (with voice <- message["voice"], voice != nil do
+      (with %{} = voice <- message["voice"] do
         Nadia.send_message from, "I see you sent a voice message to me, I'll try to download it first"
         file_id = voice["file_id"]
         case Nadia.get_file(file_id) do

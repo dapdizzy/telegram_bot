@@ -13,9 +13,8 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
     RabbitMQSender |> RabbitMQSender.send_message(queue_name, Jason.encode!(params))
     message = params["message"]
     from = message["from"]["id"]
-    text = message["text"]
     cond do
-      (with text <- message["text"] when text |> is_binary() do
+      (with text when text |> is_binary() <- message["text"] do
         unless try_handle_request text, from do
           case Repo.insert(%Message{from: from, message: text}) do
             {:ok, _} -> IO.puts "Successfully saved message to the Database"

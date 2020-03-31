@@ -19,7 +19,7 @@ defmodule ExTelegramBotWebHooks.Application do
     # List all child processes to be supervised
     children = [
       ExTelegramBotWebHooks.Repo,
-      ExTelegramBotWebHooks.BotState,
+      {ExTelegramBotWebHooks.BotState, nil},
       # Start the endpoint when the application starts
       ExTelegramBotWebHooksWeb.Endpoint,
       # Starts a worker by calling: ExTelegramBotWebHooks.Worker.start_link(arg)

@@ -19,7 +19,7 @@ defmodule ExTelegramBotWebHooks.MixProject do
   def application do
     [
       mod: {ExTelegramBotWebHooks.Application, []},
-      extra_applications: [:logger, :runtime_tools, :nadia]
+      extra_applications: [:logger, :runtime_tools, :nadia, :httpoison]
     ]
   end
 

@@ -23,7 +23,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
   end
 
   defp try_handle_request(text, from) do
-    if text =~ ~r/my\s+messages/i do
+    if text && text =~ ~r/my\s+messages/i do
       message = "Sending your messages"
       Nadia.send_message(from, message)
       your_messages = Message |> Ecto.Query.where([m], from: ^from) |> Repo.all

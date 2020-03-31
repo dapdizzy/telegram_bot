@@ -48,6 +48,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
     cond do
       try_get_my_messages(text, from) -> true
       try_get_last_file_path(text, from) -> true
+      try_get_last_file_size(text, from) -> true
       true -> false
     end
   end
@@ -69,6 +70,29 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       last_file_path = BotState.get_last_file_path
       if last_file_path do
         Nadia.send_message from, "last file name is: [#{last_file_path}]"
+      else
+        Nadia.send_message from, "Last file name is not set in the bot state"
+      end
+      true
+    end
+  end
+
+  defp try_get_last_file_size(text, from) do
+    if text && text =~ ~r/get\s+last\s+file\s+size/i do
+      last_file_path = BotState.get_last_file_path
+      if last_file_path do
+        Nadia.send_message from, "I see I have file [#{last_file_path}]. I'll try to go and download it."
+        token = Application.get_env(:nadia, :token)
+        case HTTPoison.get(~s|https://api.telegram.org/file/bot#{token}/#{last_file_path}|) do
+          {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
+            if status_code >= 200 and status_code < 299 do
+              Nadia.send_message from, "Received good response of length #{byte_size(body)} bytes"
+            else
+              Nadia.send_message from, "Received status code: #{status_code}"
+            end
+          {:error, %HTTPoison.Error{reason: reason}} ->
+            Nadia.send_message from, "Returned bad response with reason: #{inspect reason}"
+        end
       else
         Nadia.send_message from, "Last file name is not set in the bot state"
       end

@@ -43,7 +43,8 @@ defmodule ExTelegramBotWebHooks.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:nadia, "~> 0.6.0"},
-      {:rabbitmq_sender, "~> 0.1.8"}
+      {:rabbitmq_sender, "~> 0.1.8"},
+      {:httpoison, "~> 1.6"}
     ]
   end
 end

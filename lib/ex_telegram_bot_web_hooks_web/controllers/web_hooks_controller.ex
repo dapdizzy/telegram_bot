@@ -121,7 +121,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
                 {
                   "config": {
                     "encoding": "OGG_OPUS",
-                    "sampleRateHertz": 16000,
+                    "sampleRateHertz": 8000,
                     "languageCode": "ru-RU"
                   },
                   "audio": {

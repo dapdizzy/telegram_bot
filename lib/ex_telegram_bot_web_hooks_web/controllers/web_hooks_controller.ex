@@ -103,7 +103,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
     end
   end
 
-  defp try_send_speech_to_text_request(from, text) do
+  defp try_send_speech_to_text_request(text, from) do
     if text && text =~ ~r/gecognize\s+speech/i do
       last_file_path = BotState.get_last_file_path
       if last_file_path do

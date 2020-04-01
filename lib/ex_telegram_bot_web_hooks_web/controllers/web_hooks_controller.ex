@@ -120,7 +120,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
                 ~s"""
                 {
                   "config": {
-                    "encoding": "OGG",
+                    "encoding": "OGG_OPUS",
                     "languageCode": "ru-RU"
                   },
                   "audio": {

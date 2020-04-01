@@ -49,6 +49,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       try_get_my_messages(text, from) -> true
       try_get_last_file_path(text, from) -> true
       try_get_last_file_size(text, from) -> true
+      try_send_speech_to_text_request(text, from) -> true
       true -> false
     end
   end
@@ -97,6 +98,56 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
         IO.puts "After the HTTP request being executed"
       else
         Nadia.send_message from, "Last file name is not set in the bot state"
+      end
+      true
+    end
+  end
+
+  defp try_send_speech_to_text_request(from, text) do
+    if text && text =~ ~r/gecognize\s+speech/i do
+      last_file_path = BotState.get_last_file_path
+      if last_file_path do
+        Nadia.send_message from, "I see there is a file [#{last_file_path}]. I'll try tp go and submit a request to speech to text service."
+        token = System.get_env("BOT_TOKEN")
+        case HTTPoison.get(~s|https://api.telegram.org/file/bot#{token}/#{last_file_path}|) do
+          {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
+            if status_code >= 200 and status_code < 299 do
+              Nadia.send_message from, "Received good response of length #{byte_size(body)} bytes"
+              base64body = Base.encode64(body)
+              g_access_token = System.get_env("G_TOKEN")
+              case HTTPoison.post(
+                "https://speech.googleapis.com/v1/speech:recognize",
+                ~s"""
+                {
+                  "config": {
+                    "encoding": "OGG",
+                    "languageCode": "ru-RU"
+                  },
+                  "audio": {
+                    "content": "#{base64body}"
+                  }
+                }
+                """,
+                [{"Content-Type", "application/json"}, {"Authorization", "Bearer #{g_access_token}"}],
+                []) do
+                  {:ok, %HTTPoison.Response{status_code: speech_status_code, body: speech_body}} ->
+                    if speech_status_code >= 200 and speech_status_code <= 299 do
+                      Nadia.send_message from, "Received good response from speech recognition API"
+                      Nadia.send_message from, "#{inspect speech_body}"
+                    else
+                      Nadia.send_message from, "Received bad response with status code: #{speech_status_code}, body: #{speech_body}"
+                    end
+                  {:error, %HTTPoison.Error{reason: speech_failure_reason}} ->
+                    Nadia.send_message from, "Failed speech recognition request for reason: #{inspect speech_failure_reason}"
+                end
+            else
+              Nadia.send_message from, "Received status code: #{status_code}"
+            end
+          {:error, %HTTPoison.Error{reason: reason}} ->
+            Nadia.send_message from, "Returned bad response with reason: #{inspect reason}"
+        end
+      else
+        Nadia.send_message from, "Last gile name is not set in the bot state"
       end
       true
     end

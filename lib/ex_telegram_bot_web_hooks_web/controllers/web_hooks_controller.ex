@@ -114,9 +114,9 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
             if status_code >= 200 and status_code < 299 do
               Nadia.send_message from, "Received good response of length #{byte_size(body)} bytes"
               base64body = Base.encode64(body)
-              g_access_token = System.get_env("G_TOKEN")
+              g_api_key = System.get_env("G_API_KEY")
               case HTTPoison.post(
-                "https://speech.googleapis.com/v1/speech:recognize",
+                "https://speech.googleapis.com/v1/speech:recognize?key=#{g_api_key}",
                 ~s"""
                 {
                   "config": {
@@ -128,7 +128,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
                   }
                 }
                 """,
-                [{"Content-Type", "application/json"}, {"Authorization", "Bearer #{g_access_token}"}],
+                [{"Content-Type", "application/json"}],
                 []) do
                   {:ok, %HTTPoison.Response{status_code: speech_status_code, body: speech_body}} ->
                     if speech_status_code >= 200 and speech_status_code <= 299 do

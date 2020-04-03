@@ -24,12 +24,14 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
         true
       end) -> true
       (with %{} = voice <- message["voice"] do
-        Nadia.send_message from, "I see you sent a voice message to me, I'll try to download it first"
+        Nadia.send_message from, "Слушаю ваше сообщение"
+        # Nadia.send_message from, "I see you sent a voice message to me, I'll try to download it first"
         file_id = voice["file_id"]
         case Nadia.get_file(file_id) do
           {:ok, %Nadia.Model.File{file_path: file_path}} ->
             Nadia.send_message from, "I've got the file path [#{file_path}]"
             BotState.set_last_file_path file_path
+            parse_voice_message file_path, from
           {:error, error} ->
             Nadia.send_message from, "Got error: #{inspect error}"
         end
@@ -102,6 +104,57 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       end
       true
     end
+  end
+
+  defp parse_voice_message(voice_file_path, from) do
+    token = System.get_env("BOT_TOKEN")
+    IO.puts "Going to send reqest to try and download file"
+    case HTTPoison.get(~s|https://api.telegram.org/file/bot#{token}/#{voice_file_path}|) do
+      {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
+        if status_code >= 200 and status_code < 299 do
+          IO.puts "Received good response of length #{byte_size(body)} bytes"
+          voice_to_text body, from
+        else
+          Nadia.send_message from, "Received status code: #{status_code}"
+        end
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Nadia.send_message from, "Returned bad response with reason: #{inspect reason}"
+    end
+  end
+
+  defp voice_to_text(file_contents, from) do
+    base64body = Base.encode64(file_contents)
+    g_api_key = System.get_env("G_API_KEY")
+    case HTTPoison.post(
+      "https://speech.googleapis.com/v1/speech:recognize?key=#{g_api_key}",
+      ~s"""
+      {
+        "config": {
+          "encoding": "OGG_OPUS",
+          "sampleRateHertz": 48000,
+          "languageCode": "ru-RU"
+        },
+        "audio": {
+          "content": "#{base64body}"
+        }
+      }
+      """,
+      [{"Content-Type", "application/json"}],
+      []) do
+        {:ok, %HTTPoison.Response{status_code: speech_status_code, body: speech_body}} ->
+          if speech_status_code >= 200 and speech_status_code <= 299 do
+            IO.puts "Received good response from speech recognition API"
+            IO.puts "#{inspect speech_body}"
+            result_map = Jason.decode! speech_body
+            with %{"alternatives" => alternatives} <- result_map["results"] |> Enum.at(0), alternative <- alternatives |> Enum.at(0), transcript <- alternative["transcript"] do
+              Nadia.send_message from, transcript
+            end
+          else
+            Nadia.send_message from, "Received bad response with status code: #{speech_status_code}, body: #{speech_body}"
+          end
+        {:error, %HTTPoison.Error{reason: speech_failure_reason}} ->
+          Nadia.send_message from, "Failed speech recognition request for reason: #{inspect speech_failure_reason}"
+      end
   end
 
   defp try_send_last_file_uri(text, from) do

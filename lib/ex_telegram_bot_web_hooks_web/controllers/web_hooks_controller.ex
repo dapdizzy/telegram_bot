@@ -50,6 +50,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       try_get_last_file_path(text, from) -> true
       try_get_last_file_size(text, from) -> true
       try_send_speech_to_text_request(text, from) -> true
+      try_send_last_file_uri(text, from) -> true
       true -> false
     end
   end
@@ -101,6 +102,24 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       end
       true
     end
+  end
+
+  defp try_send_last_file_uri(text, from) do
+    if text && text =~ ~r/send\s+last\s+file\sur[il]/i do
+      send_last_file_uri from
+      true
+    end
+  end
+
+  defp send_last_file_uri(from) do
+    message =
+      case BotState.get_last_file_path do
+        last_file_path when last_file_path |> is_binary() and byte_size(last_file_path) > 0 ->
+          token = System.get_env("BOT_TOKEN")
+          ~s|https://api.telegram.org/file/bot#{token}/#{last_file_path}|
+        _ -> "Last file name is not set in the bit state"
+      end
+    Nadia.send_message from, message
   end
 
   defp try_send_speech_to_text_request(text, from) do

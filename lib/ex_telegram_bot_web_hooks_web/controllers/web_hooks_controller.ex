@@ -118,7 +118,9 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
             case voice_to_text body, from do
               {:transrcipt, transcript} ->
                 transcript
-              _ -> "Не получилось распознать голос"
+              other ->
+                IO.puts "Other came out: #{inspect other}"
+                "Не получилось распознать голос"
             end
           Nadia.send_message from, message
         else
@@ -173,16 +175,22 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
           with %{"transcript" => transcript, "confidence" => confidence} <- alternative do
             if value === nil or confidence > value.confidence, do: %{confidence: confidence, transcript: transcript}, else: value
           else
-            _ -> value
+            x ->
+              IO.puts "Failed with #{inspect x}"
+              value
           end
         end)
       else
-        _ -> best
+        y ->
+          IO.puts "Failed with #{inspect y}"
+          best
       end
     end) do
       best_transcript
     else
-      _ -> "Oops"
+      z ->
+        IO.puts "Failed with #{inspect z}"
+        "Oops"
     end
   end
 

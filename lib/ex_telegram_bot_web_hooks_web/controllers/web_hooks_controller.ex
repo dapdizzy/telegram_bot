@@ -29,7 +29,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
         file_id = voice["file_id"]
         case Nadia.get_file(file_id) do
           {:ok, %Nadia.Model.File{file_path: file_path}} ->
-            Nadia.send_message from, "I've got the file path [#{file_path}]"
+            IO.puts "I've got the file path [#{file_path}]"
             BotState.set_last_file_path file_path
             parse_voice_message file_path, from
           {:error, error} ->

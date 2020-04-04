@@ -35,6 +35,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
           {:error, error} ->
             Nadia.send_message from, "Got error: #{inspect error}"
         end
+        true
       end) -> true
     end
     # unless try_handle_request text, from do

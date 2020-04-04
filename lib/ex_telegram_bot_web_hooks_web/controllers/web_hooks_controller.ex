@@ -117,12 +117,16 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
           message =
             case voice_to_text body, from do
               {:transcript, transcript} ->
-                transcript
+                unless try_handle_request transcript, from do
+                  transcript
+                end
               other ->
                 IO.puts "Other came out: #{inspect other}"
                 "Не получилось распознать голос"
             end
-          Nadia.send_message from, message
+          if message do
+            Nadia.send_message from, message
+          end
         else
           Nadia.send_message from, "Received status code: #{status_code}"
         end

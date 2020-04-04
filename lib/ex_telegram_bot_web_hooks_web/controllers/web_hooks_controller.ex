@@ -53,6 +53,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       try_get_last_file_size(text, from) -> true
       try_send_speech_to_text_request(text, from) -> true
       try_send_last_file_uri(text, from) -> true
+      try_get_author(text, from) -> true
       true -> false
     end
   end
@@ -113,7 +114,13 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
       {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
         if status_code >= 200 and status_code < 299 do
           IO.puts "Received good response of length #{byte_size(body)} bytes"
-          voice_to_text body, from
+          message =
+            case voice_to_text body, from do
+              {:transrcipt, transcript} ->
+                transcript
+              _ -> "Не получилось распознать голос"
+            end
+          Nadia.send_message from, message
         else
           Nadia.send_message from, "Received status code: #{status_code}"
         end
@@ -146,15 +153,48 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
             IO.puts "Received good response from speech recognition API"
             IO.puts "#{inspect speech_body}"
             result_map = Jason.decode! speech_body
-            with %{"alternatives" => alternatives} <- result_map["results"] |> Enum.at(0), alternative <- alternatives |> Enum.at(0), transcript <- alternative["transcript"] do
-              Nadia.send_message from, transcript
-            end
+            transcript = get_best_result result_map
+            # with %{"alternatives" => alternatives} <- result_map["results"] |> Enum.at(0), alternative <- alternatives |> Enum.at(0), transcript <- alternative["transcript"] do
+            #   Nadia.send_message from, transcript
+            # end
+            {:transcript, transcript}
           else
             Nadia.send_message from, "Received bad response with status code: #{speech_status_code}, body: #{speech_body}"
           end
         {:error, %HTTPoison.Error{reason: speech_failure_reason}} ->
           Nadia.send_message from, "Failed speech recognition request for reason: #{inspect speech_failure_reason}"
       end
+  end
+
+  defp get_best_result(results) do
+    with %{transcript: best_transcript, confidence: _confidence} <- results |> Enum.reduce(nil, fn result, best ->
+      with %{"alternatives" => alternatives} <- result do
+        alternatives |> Enum.reduce(best, fn alternative, value ->
+          with %{"transcript" => transcript, "confidence" => confidence} <- alternative do
+            if value === nil or confidence > value.confidence, do: %{confidence: confidence, transcript: transcript}, else: value
+          else
+            _ -> value
+          end
+        end)
+      else
+        _ -> best
+      end
+    end) do
+      best_transcript
+    else
+      _ -> "Oops"
+    end
+  end
+
+  defp try_get_author(text, from) do
+    if text && text =~ ~r/твой\s+(автор|создатель)/i do
+      get_author from
+      true
+    end
+  end
+
+  defp get_author(from) do
+    Nadia.send_message from, "Мой создатель - Дмитрий Пятков"
   end
 
   defp try_send_last_file_uri(text, from) do

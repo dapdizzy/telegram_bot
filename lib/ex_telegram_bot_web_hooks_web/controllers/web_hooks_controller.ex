@@ -116,7 +116,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
           IO.puts "Received good response of length #{byte_size(body)} bytes"
           message =
             case voice_to_text body, from do
-              {:transrcipt, transcript} ->
+              {:transcript, transcript} ->
                 transcript
               other ->
                 IO.puts "Other came out: #{inspect other}"
@@ -155,7 +155,7 @@ defmodule ExTelegramBotWebHooksWeb.WebHooksController do
             IO.puts "Received good response from speech recognition API"
             IO.puts "#{inspect speech_body}"
             result_map = Jason.decode! speech_body
-            transcript = get_best_result result_map
+            transcript = get_best_result result_map["results"]
             # with %{"alternatives" => alternatives} <- result_map["results"] |> Enum.at(0), alternative <- alternatives |> Enum.at(0), transcript <- alternative["transcript"] do
             #   Nadia.send_message from, transcript
             # end
